@@ -1,0 +1,10 @@
+services:
+  tracker:
+    build: .
+    restart: unless-stopped
+    ports: ["3000:3000"]
+    volumes: ["./data:/data"]
+    environment:
+      ADMIN_USER: admin
+      ADMIN_PASSWORD: change-me-now   # used only on first start
+      TRUST_PROXY: "1"                # set when behind nginx/Caddy

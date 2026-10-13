@@ -1,0 +1,26 @@
+# Render Blueprint: New > Blueprint > pick your repo. Needs a paid instance (persistent disk).
+services:
+  - type: web
+    name: order-tracker
+    runtime: node
+    plan: starter
+    buildCommand: echo "nothing to build"
+    startCommand: node server.js
+    healthCheckPath: /healthz
+    disk:
+      name: tracker-data
+      mountPath: /var/data
+      sizeGB: 1
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: NODE_NO_WARNINGS
+        value: "1"
+      - key: DATA_DIR
+        value: /var/data
+      - key: TRUST_PROXY
+        value: "1"
+      - key: ADMIN_USER
+        value: admin
+      - key: ADMIN_PASSWORD
+        sync: false        # you will be asked for this on first deploy

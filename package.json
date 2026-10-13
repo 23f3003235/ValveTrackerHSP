@@ -1,0 +1,10 @@
+{
+  "name": "order-documentation-tracker",
+  "version": "1.0.0",
+  "description": "Valve order documentation tracker: milestones, dashboard, roles, attachments",
+  "main": "server.js",
+  "scripts": { "start": "node server.js" },
+  "engines": { "node": ">=22.13" },
+  "license": "UNLICENSED",
+  "private": true
+}

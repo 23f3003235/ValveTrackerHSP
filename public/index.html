@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Order Documentation Tracker</title>
+<!-- To run fully offline/intranet, download these 3 files into public/vendor/ and change the src paths (see README). -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+<style>
+:root{--bg:#eceff2;--card:#fff;--tx:#17212b;--mu:#5d6b7a;--bd:#d3dae1;--ac:#24415e;--br:#b07d2c;--gr:#17794d;--grb:#e2f3ea;--rd:#b3261e;--rdb:#fbe6e3;--am:#8a5a00}
+@media(prefers-color-scheme:dark){:root{--bg:#11161c;--card:#1a222b;--tx:#e6ebf0;--mu:#93a1b0;--bd:#2b3743;--gr:#4cc38a;--grb:#13301f;--rd:#ff8a80;--rdb:#3a1714;--am:#e3b341}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.45 "Bahnschrift","Segoe UI","Helvetica Neue",Arial,sans-serif;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
+header{background:var(--ac);color:#fff;border-bottom:3px solid var(--br);padding:10px 16px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between}
+header h1{font-size:19px;margin:0;letter-spacing:.2px}header small{opacity:.8;display:block}
+nav{display:flex;gap:6px;flex-wrap:wrap}
+main{max-width:1100px;margin:0 auto;padding:14px}
+button,input,select,textarea{font:inherit;color:inherit}
+button{background:var(--ac);color:#fff;border:0;border-radius:6px;padding:8px 14px;cursor:pointer}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--br);outline-offset:1px}
+button.g{background:transparent;color:var(--ac);border:1px solid var(--bd)}
+@media(prefers-color-scheme:dark){button.g{color:var(--tx)}}
+header button{background:rgba(255,255,255,.16);color:#fff;border:0}header button.on{background:#fff;color:var(--ac)}
+button.r{background:var(--rd);color:#fff}button.s{background:var(--gr);color:#fff}button.sm{padding:4px 9px;font-size:13px}
+input,select,textarea{width:100%;background:var(--card);border:1px solid var(--bd);border-radius:6px;padding:8px}
+label{display:block;font-size:13px;color:var(--mu);margin-bottom:3px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:8px;padding:14px;margin-bottom:12px}
+.grid{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));margin-bottom:12px}
+.f{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+.stat{cursor:pointer;margin:0;padding:12px 14px;border-top:4px solid var(--bd)}.stat b{font-size:30px;display:block;line-height:1.1}
+.stat.sel{border-color:var(--ac);border-top-color:var(--br)}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.sp{flex:1}
+.ord{border-left:8px solid var(--bd);cursor:pointer}
+.ord.green{border-left-color:var(--gr);background:var(--grb)}.ord.red{border-left-color:var(--rd);background:var(--rdb)}
+.ord a{font-weight:700;text-decoration:underline;cursor:pointer}
+.pill{border-radius:99px;padding:2px 10px;font-size:12px;font-weight:700;background:var(--bd);color:var(--tx)}
+.pill.green{background:var(--gr);color:#fff}.pill.red{background:var(--rd);color:#fff}
+.track{display:flex;gap:3px;width:100%;margin-top:8px}.track i{flex:1;height:9px;border-radius:2px;background:var(--bd)}
+.track i.done{background:var(--gr)}.track i.late{background:var(--rd)}
+.bar{display:flex;align-items:center;gap:8px;cursor:pointer;margin:6px 0}.bar>div{height:18px;background:var(--ac);border-radius:3px;min-width:4px}
+.ms{border:1px solid var(--bd);border-left-width:6px;border-radius:6px;padding:10px;margin:8px 0;background:var(--card)}
+.ms.done{background:var(--grb);border-color:var(--gr)}.ms.late{background:var(--rdb);border-color:var(--rd)}
+.mu{color:var(--mu);font-size:13px}.err{color:var(--rd)}
+.modal{position:fixed;inset:0;background:rgba(10,18,28,.55);overflow:auto;padding:12px;z-index:9}
+.modal>div{max-width:780px;margin:0 auto}
+table{width:100%;border-collapse:collapse}td,th{padding:6px;border-bottom:1px solid var(--bd);text-align:left;font-size:14px}
+.wrap{overflow-x:auto}
+.fh{display:flex;align-items:center;gap:4px;margin-bottom:3px}
+.lbl{flex:1;min-width:0;width:auto;border:0;border-bottom:1px dashed var(--bd);border-radius:0;background:transparent;padding:0 0 2px;font-size:13px;color:var(--mu)}
+.x{background:transparent;color:var(--mu);border:0;padding:0 6px;font-size:14px;line-height:1}.x:hover{color:var(--rd)}
+.chips{display:flex;flex-wrap:wrap;gap:4px;align-items:center;background:var(--card);border:1px solid var(--bd);border-radius:6px;padding:4px 6px}
+.chips input{flex:1;min-width:150px;border:0;padding:4px;background:transparent}
+.chip{display:inline-flex;align-items:center;background:var(--bd);color:var(--tx);border-radius:99px;padding:1px 3px 1px 10px;font-size:13px}
+.chip button{background:transparent;color:var(--mu);padding:0 6px;border:0}
+@media print{header,.noprint,button{display:none!important}.modal{position:static;background:none;padding:0}body{background:#fff;color:#000}}
+</style></head>
+<body><div id="root"></div>
+<script type="text/babel">
+const {useState,useEffect,useMemo,useCallback}=React;
+const TODAY=new Date(Date.now()-new Date().getTimezoneOffset()*6e4).toISOString().slice(0,10);
+const addD=(s,n)=>{const d=new Date(s+'T00:00:00Z');d.setUTCDate(d.getUTCDate()+n);return d.toISOString().slice(0,10)};
+const DEFAULT_MS=[];
+
+async function api(m,u,b){
+ const r=await fetch(u,{method:m,credentials:'same-origin',headers:{'x-req':'1',...(b?{'content-type':'application/json'}:{})},body:b?JSON.stringify(b):undefined});
+ const j=await r.json().catch(()=>({}));
+ if(!r.ok)throw Object.assign(new Error(j.error||r.statusText),{status:r.status,body:j});return j}
+
+function useApp(){
+ const [s,set]=useState({ready:false,locked:false,me:null,cfg:{app:'Order Documentation Tracker',mfr:'',ac:'#24415e',fields:[],ms:[],weeks:12},orders:[],brand:null});
+ const load=useCallback(async()=>{try{const j=await api('GET','/api/state');set({ready:true,locked:false,me:j.me,cfg:j.cfg,orders:j.orders,brand:null})}
+  catch(e){if(e.status===401)set(p=>({...p,ready:true,locked:true,me:null,orders:[],brand:e.body.brand}));else console.error(e)}},[]);
+ useEffect(()=>{load();const t=setInterval(()=>{if(!document.hidden)load()},20000);return()=>clearInterval(t)},[load]);
+ return{...s,load}}
+
+// status of one order: milestones with state (done / late / open)
+const ost=o=>{const ms=o.ms.slice().sort((a,b)=>a.w-b.w).map(m=>{const due=addD(o.date,m.w*7);return{...m,due,s:m.done?'done':due<TODAY?'late':'open'}});
+ const cur=ms.findIndex(m=>m.s!=='done');
+ return{ms,cur,soon:ms.some(m=>m.s==='open'&&m.due<=addD(TODAY,m.r??7)),red:ms.some(m=>m.s==='late'),done:cur<0&&ms.length>0}};
+const cls=o=>{const s=ost(o);return s.done||!s.red?'green':'red'};
+const Track=({s})=><div className="track">{s.ms.map((m,i)=><i key={i} className={m.s} title={'W'+m.w+' '+m.t+' - '+(m.s==='done'?'passed '+m.done:m.s==='late'?'OVERDUE, due '+m.due:'due '+m.due)}/>)}</div>;
+
+function Login({S,close}){
+ const [u,sU]=useState(''),[p,sP]=useState(''),[e,sE]=useState(''),[b,sB]=useState(false);
+ const go=async()=>{sB(true);sE('');try{await api('POST','/api/login',{username:u,password:p});await S.load();close&&close()}catch(x){sE(x.message)}sB(false)};
+ const box=<div className="card" style={{maxWidth:380,margin:'60px auto 0'}}>
+  <h3 style={{marginTop:0}}>Sign in</h3>
+  <label>Username</label><input value={u} onChange={e=>sU(e.target.value)} autoCapitalize="none" autoComplete="username"/>
+  <label style={{marginTop:8}}>Password</label><input type="password" value={p} autoComplete="current-password" onChange={e=>sP(e.target.value)} onKeyDown={e=>e.key==='Enter'&&go()}/>
+  {e&&<p className="err">{e}</p>}
+  <div className="row" style={{marginTop:12}}><button disabled={b} onClick={go}>Sign in</button>{close&&<button className="g" onClick={close}>Cancel</button>}</div></div>;
+ return close?<div className="modal">{box}</div>:box}
+
+function Account({S,close}){
+ const [o,sO]=useState(''),[n,sN]=useState(''),[m,sM]=useState('');
+ const go=async()=>{try{await api('POST','/api/password',{old:o,new:n});sM('Password changed');sO('');sN('')}catch(e){sM(e.message)}};
+ return<div className="modal"><div className="card" style={{maxWidth:380,marginTop:60}}>
+  <h3 style={{marginTop:0}}>{S.me.name} ({S.me.role})</h3>
+  <label>Current password</label><input type="password" value={o} onChange={e=>sO(e.target.value)}/>
+  <label style={{marginTop:8}}>New password (8+ characters)</label><input type="password" value={n} onChange={e=>sN(e.target.value)}/>
+  {m&&<p className="mu">{m}</p>}
+  <div className="row" style={{marginTop:12}}><button onClick={go}>Change password</button><button className="g" onClick={close}>Close</button></div></div></div>}
+
+// ---- built-in order fields: label can be renamed per order, optional ones can be removed ----
+const BASE={date:'PO receipt date',orderNo:'Order no',customer:'Customer name',email:'Customer email (for reminders)',est:'Estimated delivery date',mref:'Manufacturer ref no',weeks:'Documentation due by week no'};
+const REQ=['date','orderNo','customer'];
+const lbl=(o,k)=>(o.labels&&o.labels[k])||BASE[k];
+const hidden=(o,k)=>(o.hide||[]).includes(k);
+
+// field name that can be edited in place (commits on blur / Enter)
+function LabelEdit({value,onCommit}){
+ return<input className="lbl" aria-label="Field name (editable)" title="Tap to rename this field" defaultValue={value} maxLength={60}
+  onKeyDown={e=>e.key==='Enter'&&e.target.blur()}
+  onBlur={e=>{const v=e.target.value.trim();if(v&&v!==value)onCommit(v);else e.target.value=value}}/>}
+
+// several customer emails as removable chips (separate with comma, semicolon, space or Enter)
+const EM_RE=/^[^\s@,;]+@[^\s@,;]+$/;
+const splitEm=s=>String(s||'').split(/[\s,;]+/).map(x=>x.trim()).filter(Boolean);
+function EmailsInput({value,onChange}){
+ const [d,sD]=useState(''),[er,sEr]=useState('');
+ const list=splitEm(value);
+ const commit=txt=>{const parts=splitEm(txt);if(!parts.length){sD('');sEr('');return}
+  const ok=parts.filter(x=>EM_RE.test(x)),bad=parts.filter(x=>!EM_RE.test(x)),seen=new Set(list.map(x=>x.toLowerCase()));
+  const add=ok.filter(x=>{const k=x.toLowerCase();if(seen.has(k))return false;seen.add(k);return true});
+  let msg=bad.length?'Not a valid email: '+bad.join(', '):'';
+  if(list.length+add.length>20){add.length=Math.max(0,20-list.length);msg='At most 20 email addresses'}
+  if(add.length)onChange([...list,...add].join(', '));
+  sD(bad.join(' '));sEr(msg)};
+ return<div><div className="chips">
+  {list.map(x=><span key={x} className="chip">{x}<button type="button" title="Remove" onClick={()=>onChange(list.filter(y=>y!==x).join(', '))}>✕</button></span>)}
+  <input type="text" inputMode="email" autoCapitalize="none" autoComplete="off" placeholder={list.length?'Add another email':'name@company.com, name2@company.com'} value={d}
+   onChange={e=>{const v=e.target.value;if(/[,;\s]/.test(v))commit(v);else{sD(v);sEr('')}}}
+   onKeyDown={e=>{if(e.key==='Enter'){e.preventDefault();commit(d)}else if(e.key==='Backspace'&&!d&&list.length)onChange(list.slice(0,-1).join(', '))}}
+   onBlur={()=>commit(d)}/></div>
+  {er&&<div className="err" style={{fontSize:13,marginTop:2}}>{er}</div>}</div>}
+
+// one milestone row: week, text, and how many days before the due date the reminder / "due soon" flag starts
+function MsEdit({m,on,rm}){
+ return<div className="row" style={{marginBottom:6}}>
+  <span className="mu">Week</span><input type="number" min="0" style={{width:72}} value={m.w} onChange={e=>on('w',e.target.value)}/>
+  <input className="sp" style={{minWidth:160}} placeholder="Milestone" value={m.t} onChange={e=>on('t',e.target.value)}/>
+  <span className="mu">Remind</span><input type="number" min="0" max="365" style={{width:72}} title="Days before the due date when the reminder / due-soon flag starts" value={m.r??7} onChange={e=>on('r',e.target.value)}/>
+  <span className="mu">days before due</span>
+  <button className="g sm" title="Remove" onClick={rm}>✕</button></div>}
+
+function OrderForm({S,order,onDone}){
+ const c=S.cfg;
+ const [o,sO]=useState(order?{...order,labels:order.labels||{},hide:order.hide||[]}:{date:TODAY,orderNo:'',customer:'',email:'',est:'',mref:'',weeks:c.weeks,labels:{},hide:[],extra:Object.fromEntries(c.fields.map(f=>[f,''])),ms:c.ms.map(m=>({...m,r:m.r??7,done:null,note:''}))});
+ const [nf,sNf]=useState('');
+ const set=(k,v)=>sO(p=>({...p,[k]:v}));
+ const ex=(k,v)=>sO(p=>({...p,extra:{...p.extra,[k]:v}}));
+ const msu=(i,k,v)=>sO(p=>({...p,ms:p.ms.map((m,j)=>j===i?{...m,[k]:v}:m)}));
+ const setLbl=(k,v)=>sO(p=>({...p,labels:{...p.labels,[k]:v}}));
+ const del=k=>sO(p=>({...p,hide:[...p.hide,k],...(k==='email'||k==='est'||k==='mref'?{[k]:''}:{})}));
+ const restore=k=>sO(p=>({...p,hide:p.hide.filter(x=>x!==k)}));
+ const renameX=(k,v)=>{if(o.extra&&Object.prototype.hasOwnProperty.call(o.extra,v))return alert('A field named "'+v+'" already exists');
+  sO(p=>({...p,extra:Object.fromEntries(Object.entries(p.extra).map(([a,b])=>[a===k?v:a,b]))}))};
+ const delX=k=>sO(p=>{const{[k]:_,...rest}=p.extra;return{...p,extra:rest}});
+ // built-in field wrapper (a plain function, not a component, so inputs keep focus while typing)
+ const fld=(k,input)=>hidden(o,k)?null:<div key={k}>
+  <div className="fh"><LabelEdit key={lbl(o,k)} value={lbl(o,k)} onCommit={v=>setLbl(k,v)}/>
+   {REQ.includes(k)?<span className="mu" title="Required">*</span>:<button type="button" className="x" title="Remove this field from the order" onClick={()=>del(k)}>✕</button>}</div>
+  {input}</div>;
+ const save=async()=>{
+  if(!o.orderNo||!o.customer||!o.date)return alert('PO receipt date, order no and customer are required');
+  await S.run(async()=>{const d={...o,ms:o.ms.map(m=>({...m,w:+m.w||0,r:(m.r===''||m.r==null)?7:+m.r}))};
+   const r=order?await api('PUT','/api/orders/'+order.id,{data:d,rev:order.rev}):await api('POST','/api/orders',{data:d});onDone(order?order.id:r.id)})};
+ return<div className="card"><h3 style={{marginTop:0}}>{order?'Edit order and milestones':'New order entry'}</h3>
+ <p className="mu" style={{marginTop:0}}>Tap a field name to rename it. ✕ removes a field from this order (PO date, order no and customer are required, so they can be renamed but not removed).</p>
+ <div className="f">
+  {fld('date',<input type="date" value={o.date} onChange={e=>set('date',e.target.value)}/>)}
+  {fld('orderNo',<input value={o.orderNo} onChange={e=>set('orderNo',e.target.value)}/>)}
+  {fld('customer',<input value={o.customer} onChange={e=>set('customer',e.target.value)}/>)}
+  {fld('email',<EmailsInput value={o.email||''} onChange={v=>set('email',v)}/>)}
+  {fld('est',<input type="date" value={o.est||''} onChange={e=>set('est',e.target.value)}/>)}
+  {fld('mref',<input value={o.mref||''} onChange={e=>set('mref',e.target.value)}/>)}
+  {fld('weeks',<input type="number" min="1" value={o.weeks} onChange={e=>set('weeks',+e.target.value)}/>)}
+  {Object.keys(o.extra||{}).map(k=><div key={k}>
+   <div className="fh"><LabelEdit value={k} onCommit={v=>renameX(k,v)}/><button type="button" className="x" title="Remove this field" onClick={()=>delX(k)}>✕</button></div>
+   <input value={o.extra[k]} onChange={e=>ex(k,e.target.value)}/></div>)}
+ </div>
+ {o.hide.length>0&&<div className="row" style={{marginTop:10}}><span className="mu">Removed fields:</span>
+  {o.hide.map(k=><button key={k} className="g sm" onClick={()=>restore(k)}>+ {lbl(o,k)}</button>)}</div>}
+ <div className="row" style={{marginTop:10}}><input style={{maxWidth:260}} placeholder="Add field (e.g. Project no)" value={nf} onChange={e=>sNf(e.target.value)}/>
+  <button className="g sm" onClick={()=>{const n=nf.trim();if(!n)return;if(Object.prototype.hasOwnProperty.call(o.extra||{},n))return alert('A field named "'+n+'" already exists');ex(n,'');sNf('')}}>+ Add field</button></div>
+ <h4>Milestones: week no, text and reminder days</h4>
+ {o.ms.map((m,i)=><MsEdit key={i} m={m} on={(k,v)=>msu(i,k,v)} rm={()=>sO(p=>({...p,ms:p.ms.filter((_,j)=>j!==i)}))}/>)}
+ <button className="g sm" onClick={()=>sO(p=>({...p,ms:[...p.ms,{w:p.weeks,t:'',r:7,done:null,note:''}]}))}>+ Add milestone</button>
+ <div className="row" style={{marginTop:14}}><button onClick={save}>Save order</button><button className="g" onClick={()=>onDone(null)}>Cancel</button></div></div>}
+function Detail({S,id,onClose,onEdit}){
+ const o=S.orders.find(x=>x.id===id);if(!o)return null;
+ const ed=S.me&&S.me.role!=='viewer',ad=S.me&&S.me.role==='admin',s=ost(o);
+ const patch=(t,p)=>S.run(()=>api('PUT','/api/orders/'+o.id,{rev:o.rev,data:{...o,ms:o.ms.map(m=>m.w===t.w&&m.t===t.t?{...m,...p}:m)}}));
+ const upload=async e=>{const f=e.target.files[0];e.target.value='';if(!f)return;
+  await S.run(async()=>{const r=await fetch('/api/orders/'+o.id+'/files?name='+encodeURIComponent(f.name),{method:'POST',credentials:'same-origin',headers:{'x-req':'1','content-type':f.type||'application/octet-stream'},body:f});
+   if(!r.ok)throw new Error((await r.json().catch(()=>({}))).error||'Upload failed')})};
+ const rem=()=>{const p=s.ms.filter(m=>m.s!=='done').map(m=>'- W'+m.w+' '+m.t+' (due '+m.due+(m.s==='late'?', OVERDUE':'')+')').join('\n');
+  window.location.href='mailto:'+splitEm(o.email).join(',')+'?subject='+encodeURIComponent('Documentation status - Order '+o.orderNo)+'&body='+encodeURIComponent('Dear '+o.customer+',\n\nDocumentation status for order '+o.orderNo+':\n'+(p||'All documents submitted')+'\n\nRegards,\n'+S.cfg.mfr)};
+ return<div className="modal"><div>
+  <div className="card"><div className="row"><h3 className="sp" style={{margin:0}}>Order {o.orderNo}: {o.customer}</h3>
+   <span className={'pill '+(s.done||!s.red?'green':'red')}>{s.done?'Completed':s.red?'Overdue':'On track'}</span></div>
+   <p className="mu">{[[lbl(o,'date'),o.date],!hidden(o,'weeks')&&[lbl(o,'weeks'),o.weeks+' ('+addD(o.date,o.weeks*7)+')'],!hidden(o,'est')&&[lbl(o,'est'),o.est||'-'],
+    !hidden(o,'mref')&&[lbl(o,'mref'),o.mref||'-'],!hidden(o,'email')&&o.email&&[lbl(o,'email'),splitEm(o.email).join(', ')],
+    ...Object.entries(o.extra||{}).map(([k,v])=>[k,v||'-'])].filter(Boolean).map(([k,v])=>k+': '+v).join('. ')}</p>
+   <Track s={s}/>
+   <div className="row" style={{marginTop:12}}><button className="g" onClick={onClose}>← Back</button>
+    {ed&&<button className="g" onClick={onEdit}>Edit order / milestones</button>}
+    {ed&&<button className="g" onClick={rem}>✉ Email reminder</button>}
+    <button className="g" onClick={()=>window.print()}>Print</button>
+    {ad&&<button className="r" onClick={()=>confirm('Delete this order and its attachments?')&&S.run(async()=>{await api('DELETE','/api/orders/'+o.id);onClose()})}>Delete</button>}
+    <span className="sp"/><button onClick={onClose}>Close ✕</button></div></div>
+  <div className="card"><b>Attachments</b> <span className="mu">(PO mail, documents)</span>
+   {(o.files||[]).map(f=><div key={f.id} className="row" style={{margin:'4px 0'}}><a href={'/api/files/'+f.id} target="_blank" rel="noopener">📎 {f.name}</a><span className="mu">{Math.ceil(f.size/1024)} KB</span>
+    {ed&&<button className="g sm" onClick={()=>confirm('Remove '+f.name+'?')&&S.run(()=>api('DELETE','/api/files/'+f.id))}>✕</button>}</div>)}
+   {!(o.files||[]).length&&<p className="mu" style={{margin:'4px 0'}}>None</p>}{ed&&<input type="file" onChange={upload}/>}</div>
+  {s.ms.map((m,i)=><div key={i} className={'ms '+m.s}>
+   <div className="row"><b className="sp">Week {m.w}: {m.t}</b>
+    <span className={'pill '+(m.s==='done'?'green':m.s==='late'?'red':'')}>{m.s==='done'?'Passed '+m.done:m.s==='late'?'OVERDUE':'Due '+m.due}</span></div>
+   <p className="mu" style={{margin:'4px 0'}}>Due {m.due}{m.done&&m.done>m.due?'. Passed late.':''}{!m.done&&'. Reminder '+(m.r??7)+' days before due ('+addD(m.due,-(m.r??7))+')'}</p>
+   {ed?<><textarea rows="2" placeholder="Document status / remarks" defaultValue={m.note} onBlur={e=>e.target.value!==(m.note||'')&&patch(m,{note:e.target.value})}/>
+    <div style={{marginTop:6}}>{m.done?<button className="g sm" onClick={()=>patch(m,{done:null})}>Undo pass</button>:<button className="s sm" onClick={()=>patch(m,{done:TODAY})}>✓ Pass</button>}</div></>
+   :m.note&&<p style={{margin:'4px 0'}}>{m.note}</p>}
+  </div>)}
+  <div className="card noprint"><b>Activity history</b>{(o.log||[]).slice().reverse().map((l,i)=><div key={i} className="mu">{l.at}, {l.who}: {l.what}</div>)}</div>
+ </div></div>}
+
+function Users({S}){
+ const [list,sL]=useState([]),[nu,sNu]=useState({username:'',name:'',password:'',role:'viewer'});
+ const load=()=>api('GET','/api/users').then(j=>sL(j.users)).catch(e=>alert(e.message));
+ useEffect(()=>{load()},[]);
+ const act=async fn=>{try{await fn();await load()}catch(e){alert(e.message)}};
+ return<div className="card"><h3 style={{marginTop:0}}>Users</h3>
+  <div className="wrap"><table><thead><tr><th>User</th><th>Role</th><th>Active</th><th></th></tr></thead><tbody>
+  {list.map(u=><tr key={u.id}><td><b>{u.username}</b><div className="mu">{u.name}</div></td>
+   <td><select value={u.role} onChange={e=>act(()=>api('PUT','/api/users/'+u.id,{role:e.target.value}))}><option value="viewer">viewer</option><option value="editor">editor</option><option value="admin">admin</option></select></td>
+   <td><input type="checkbox" style={{width:'auto'}} checked={u.active} onChange={e=>act(()=>api('PUT','/api/users/'+u.id,{active:e.target.checked}))}/></td>
+   <td><div className="row"><button className="g sm" onClick={()=>{const p=prompt('New password for '+u.username+' (8+ characters)');if(p)act(()=>api('PUT','/api/users/'+u.id,{password:p}))}}>Reset password</button>
+    <button className="r sm" onClick={()=>confirm('Delete user '+u.username+'?')&&act(()=>api('DELETE','/api/users/'+u.id))}>Delete</button></div></td></tr>)}</tbody></table></div>
+  <h4>Create user</h4><div className="row">
+   <input style={{maxWidth:160}} placeholder="Username" autoCapitalize="none" value={nu.username} onChange={e=>sNu({...nu,username:e.target.value})}/>
+   <input style={{maxWidth:180}} placeholder="Full name" value={nu.name} onChange={e=>sNu({...nu,name:e.target.value})}/>
+   <input style={{maxWidth:180}} type="password" placeholder="Password (8+)" value={nu.password} onChange={e=>sNu({...nu,password:e.target.value})}/>
+   <select style={{maxWidth:110}} value={nu.role} onChange={e=>sNu({...nu,role:e.target.value})}><option>viewer</option><option>editor</option><option>admin</option></select>
+   <button onClick={()=>act(async()=>{await api('POST','/api/users',nu);sNu({username:'',name:'',password:'',role:'viewer'})})}>Add user</button></div>
+  <p className="mu">Viewer: read-only. Editor: create/update orders, pass milestones, attach files. Admin: everything, plus settings and users.</p></div>}
+
+function Settings({S}){
+ const [c,sC]=useState({...S.cfg,fieldsTxt:S.cfg.fields.join(', ')}),[m,sM]=useState('');
+ const k=(a,v)=>sC(p=>({...p,[a]:v}));
+ const save=()=>S.run(async()=>{const{fieldsTxt,...r}=c;await api('PUT','/api/cfg',{...r,fields:fieldsTxt.split(',').map(x=>x.trim()).filter(Boolean)});sM('Settings saved')});
+ return<div><div className="card"><h3 style={{marginTop:0}}>App settings</h3><div className="f">
+  <div><label>App name</label><input value={c.app} onChange={e=>k('app',e.target.value)}/></div>
+  <div><label>Manufacturer name</label><input value={c.mfr} onChange={e=>k('mfr',e.target.value)}/></div>
+  <div><label>Default documentation weeks</label><input type="number" value={c.weeks} onChange={e=>k('weeks',+e.target.value)}/></div>
+  <div><label>Theme colour</label><input type="color" value={c.ac} onChange={e=>k('ac',e.target.value)}/></div>
+  <div><label>Default extra order fields (comma separated)</label><input value={c.fieldsTxt} onChange={e=>k('fieldsTxt',e.target.value)}/></div></div>
+  <label className="row" style={{marginTop:12,color:'var(--tx)'}}><input type="checkbox" style={{width:'auto'}} checked={c.public} onChange={e=>k('public',e.target.checked)}/>
+   Open dashboard: anyone can view orders without logging in (turn off to require login for everything)</label>
+  <h4>Default milestones (copied into each new order)</h4>
+  <p className="mu" style={{marginTop:0}}>Remind = how many days before the due date the milestone is flagged as due soon and shown in the reminder window.</p>
+  {c.ms.map((x,i)=><MsEdit key={i} m={x} on={(a,v)=>k('ms',c.ms.map((y,j)=>j===i?{...y,[a]:v}:y))} rm={()=>k('ms',c.ms.filter((_,j)=>j!==i))}/>)}
+  <button className="g sm" onClick={()=>k('ms',[...c.ms,{w:+c.weeks,t:'',r:7}])}>+ Add milestone</button>
+  <div className="row" style={{marginTop:12}}><button onClick={save}>Save settings</button><span className="mu">{m}</span></div></div>
+ <Users S={S}/></div>}
+
+// calendar year runs September to August: PO date 2025-09-01 .. 2026-08-31 belongs to "2025-26"
+const fyOf=s=>{const y=+s.slice(0,4),m=+s.slice(5,7);return m>=9?y:y-1};
+const fyLbl=y=>y+'-'+String((y+1)%100).padStart(2,'0');
+const CUR_FY=fyOf(TODAY);
+
+function Dashboard({S,open}){
+ const [q,sQ]=useState(''),[f,sF]=useState('all'),[stage,sStage]=useState(null),[rng,sRng]=useState({from:CUR_FY,to:CUR_FY});
+ // ALL years are always loaded and analysed; the year range below only narrows what is displayed
+ const all=useMemo(()=>S.orders.map(o=>({o,s:ost(o),fy:fyOf(o.date)})).sort((a,b)=>b.o.date.localeCompare(a.o.date)),[S.orders]);
+ const years=useMemo(()=>{const ys=all.map(r=>r.fy).concat(CUR_FY),a=Math.min(...ys),b=Math.max(...ys);return Array.from({length:b-a+1},(_,i)=>a+i)},[all]);
+ const byYear={};all.forEach(r=>{byYear[r.fy]=(byYear[r.fy]||0)+1});
+ const maxY=Math.max(1,...Object.values(byYear));
+ const setFrom=v=>sRng(r=>({from:v,to:Math.max(v,r.to)})),setTo=v=>sRng(r=>({from:Math.min(v,r.from),to:v}));
+ const rows=all.filter(r=>r.fy>=rng.from&&r.fy<=rng.to); // selected year range (drives the cards and the chart)
+ const cnt={all:rows.length,done:rows.filter(r=>r.s.done).length,red:rows.filter(r=>!r.s.done&&r.s.red).length,
+  green:rows.filter(r=>!r.s.done&&!r.s.red).length,soon:rows.filter(r=>!r.s.done&&r.s.soon).length};
+ const stg=r=>r.s.ms[r.s.cur]?'W'+r.s.ms[r.s.cur].w+': '+r.s.ms[r.s.cur].t:null;
+ const stages={};rows.forEach(r=>{if(!r.s.done&&stg(r))stages[stg(r)]=(stages[stg(r)]||0)+1});
+ const max=Math.max(1,...Object.values(stages));
+ // searching looks through every year, whatever range is selected
+ const vis=(q?all:rows).filter(r=>{const{o,s}=r;
+  if(f==='red'&&!(s.red&&!s.done))return false;if(f==='green'&&(s.red||s.done))return false;if(f==='done'&&!s.done)return false;if(f==='soon'&&(s.done||!s.soon))return false;
+  if(stage&&(s.done||stg(r)!==stage))return false;
+  const t=q.toLowerCase();return !t||[o.orderNo,o.customer,o.mref,o.email,...Object.values(o.extra||{})].join(' ').toLowerCase().includes(t)});
+ const exp=()=>{const cols=[...new Set(S.orders.flatMap(o=>Object.keys(o.extra||{})))],mw=[...new Set(S.orders.flatMap(o=>o.ms.map(m=>'W'+m.w+' '+m.t)))];
+  const qt=v=>'"'+String(v??'').replace(/"/g,'""')+'"';
+  const head=['Order no','Customer','Email','PO date','Year (Sep-Aug)','Est delivery','Mfr ref','Status',...cols,...mw];
+  const lines=vis.map(({o,s,fy})=>[o.orderNo,o.customer,o.email,o.date,fyLbl(fy),o.est,o.mref,s.done?'Completed':s.red?'Overdue':'On track',...cols.map(c=>(o.extra||{})[c]),
+   ...mw.map(k=>{const m=s.ms.find(m=>'W'+m.w+' '+m.t===k);return m?(m.s==='done'?'Passed '+m.done:m.s==='late'?'OVERDUE':'Due '+m.due):''})]);
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\ufeff'+[head,...lines].map(r=>r.map(qt).join(',')).join('\r\n')],{type:'text/csv'}));
+  a.download='orders-'+TODAY+'.csv';a.click();URL.revokeObjectURL(a.href)};
+ const Stat=({k,l,col})=><div className={'card stat'+(f===k&&!stage?' sel':'')} style={{color:col}} onClick={()=>{sF(k);sStage(null)}}><b>{cnt[k]}</b>{l}</div>;
+ const pick=(a,b)=>{sRng({from:a,to:b});sStage(null)};
+ return<div>
+  <div className="card noprint"><div className="row"><b>Year (September to August)</b>
+   <span className="mu">From</span><select style={{width:110}} value={rng.from} onChange={e=>setFrom(+e.target.value)}>{years.map(y=><option key={y} value={y}>{fyLbl(y)}</option>)}</select>
+   <span className="mu">to</span><select style={{width:110}} value={rng.to} onChange={e=>setTo(+e.target.value)}>{years.map(y=><option key={y} value={y}>{fyLbl(y)}</option>)}</select>
+   <button className="g sm" onClick={()=>pick(years[0],years[years.length-1])}>All years</button>
+   <button className="g sm" onClick={()=>pick(CUR_FY,CUR_FY)}>Current year</button></div>
+   <div className="mu" style={{margin:'4px 0'}}>Showing orders with PO date from 1 Sep {rng.from} to 31 Aug {rng.to+1}. Data for all years is always loaded; search below covers every year.</div>
+   {years.map(y=>{const on=y>=rng.from&&y<=rng.to;return<div key={y} className="bar" onClick={()=>pick(y,y)} style={{fontWeight:on?700:400,opacity:on?1:.55}}>
+    <div style={{width:((byYear[y]||0)/maxY*50)+'%'}}/><span>{fyLbl(y)}: {byYear[y]||0} order{(byYear[y]||0)===1?'':'s'}</span></div>})}</div>
+  <div className="grid"><Stat k="all" l="Orders (selected years)"/><Stat k="done" l="Completed" col="var(--gr)"/><Stat k="green" l="In progress, on track" col="var(--gr)"/>
+   <Stat k="soon" l="Reminder window (due soon)" col="var(--am)"/><Stat k="red" l="Overdue (red)" col="var(--rd)"/></div>
+  <div className="card"><b>Open orders by current milestone</b> <span className="mu">(selected years; tap a bar to list those orders)</span>
+   {!Object.keys(stages).length&&<p className="mu">No orders in progress in the selected years.</p>}
+   {Object.entries(stages).map(([k,v])=><div key={k} className="bar" onClick={()=>{sStage(stage===k?null:k);sF('all')}} style={{fontWeight:stage===k?700:400}}>
+    <div style={{width:(v/max*50)+'%'}}/><span>{v}: {k}</span></div>)}</div>
+  <div className="card row noprint"><input className="sp" style={{minWidth:200}} placeholder="Search all years: order no, customer, email, ref..." value={q} onChange={e=>sQ(e.target.value)}/>
+   <select style={{width:200}} value={f} onChange={e=>sF(e.target.value)}><option value="all">All orders</option><option value="red">Red (overdue)</option><option value="green">Green (on track)</option><option value="soon">Reminder window (due soon)</option><option value="done">Completed</option></select>
+   <button className="g sm" onClick={exp}>⬇ Export Excel/CSV</button>
+   {(stage||f!=='all'||q)&&<button className="g sm" onClick={()=>{sQ('');sF('all');sStage(null)}}>Clear</button>}</div>
+  {q&&<p className="mu">Searching all years ({fyLbl(years[0])} to {fyLbl(years[years.length-1])}), regardless of the year selection.</p>}
+  {stage&&<p className="mu">Showing orders at: {stage}</p>}
+  {vis.map(({o,s,fy})=><div key={o.id} className={'card ord '+cls(o)} onClick={()=>open(o.id)}>
+   <div className="row"><div className="sp"><a>{o.orderNo}</a>: {o.customer}<div className="mu">{[lbl(o,'date')+' '+o.date+' ('+fyLbl(fy)+')',!hidden(o,'mref')&&lbl(o,'mref')+': '+(o.mref||'-'),!hidden(o,'est')&&lbl(o,'est')+': '+(o.est||'-')].filter(Boolean).join('. ')}</div></div>
+    <div style={{textAlign:'right'}}><span className={'pill '+cls(o)}>{s.done?'Completed':s.red?'OVERDUE':'On track'}</span>
+     <div className="mu">{s.done?'All documents passed':s.ms[s.cur]?'Next: W'+s.ms[s.cur].w+' '+s.ms[s.cur].t+', due '+s.ms[s.cur].due:''}</div></div></div>
+   <Track s={s}/></div>)}
+  {!vis.length&&<p className="mu">{q?'No orders match in any year.':rows.length?'No orders match.':S.orders.length?'No orders in the selected years. Pick "All years" to see everything.':'No orders yet.'}</p>}</div>}
+function App(){
+ const app=useApp();
+ const [tab,setTab]=useState('dash'),[login,setLogin]=useState(false),[acct,setAcct]=useState(false),[sel,setSel]=useState(null),[edit,setEdit]=useState(null);
+ const run=async fn=>{try{await fn()}catch(e){alert(e.status===409?'Someone else changed this order. The latest version has been loaded; please repeat your change.':e.message);if(e.status===401)setTab('dash')}await app.load()};
+ const S={...app,run},me=S.me,ed=me&&me.role!=='viewer',ad=me&&me.role==='admin';
+ const brand=S.locked?S.brand:S.cfg;
+ useEffect(()=>{if(brand){document.title=brand.app;document.documentElement.style.setProperty('--ac',brand.ac||'#24415e')}},[brand]);
+ const T=({k,l})=><button className={tab===k?'on':''} onClick={()=>{setTab(k);setSel(null);setEdit(null)}}>{l}</button>;
+ return<div>
+  <header><div><h1>{brand&&brand.app}</h1><small>{brand&&brand.mfr}</small></div>
+   <nav>{!S.locked&&<T k="dash" l="Dashboard"/>}{ed&&<T k="new" l="+ New order"/>}{ad&&<T k="set" l="Settings"/>}
+    {me?<><button onClick={()=>setAcct(true)}>{me.name}</button><button onClick={async()=>{await api('POST','/api/logout');setTab('dash');app.load()}}>Logout</button></>
+     :!S.locked&&<button onClick={()=>setLogin(true)}>Login</button>}</nav></header>
+  <main>
+   {!S.ready&&<p className="mu">Loading...</p>}
+   {S.locked&&<Login S={S}/>}
+   {S.ready&&!S.locked&&tab==='dash'&&<Dashboard S={S} open={setSel}/>}
+   {tab==='new'&&ed&&<OrderForm S={S} onDone={id=>{setTab('dash');if(id)setSel(id)}}/>}
+   {tab==='set'&&ad&&<Settings S={S}/>}
+  </main>
+  {sel&&!edit&&<Detail S={S} id={sel} onClose={()=>setSel(null)} onEdit={()=>setEdit(S.orders.find(o=>o.id===sel))}/>}
+  {edit&&<div className="modal"><div><OrderForm S={S} order={edit} onDone={()=>setEdit(null)}/></div></div>}
+  {login&&!me&&<Login S={S} close={()=>setLogin(false)}/>}
+  {acct&&me&&<Account S={S} close={()=>setAcct(false)}/>}
+ </div>}
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script></body></html>
