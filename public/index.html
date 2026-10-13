@@ -192,8 +192,12 @@ function Detail({S,id,onClose,onEdit}){
  const ed=S.me&&S.me.role!=='viewer',ad=S.me&&S.me.role==='admin',s=ost(o);
  const patch=(t,p)=>S.run(()=>api('PUT','/api/orders/'+o.id,{rev:o.rev,data:{...o,ms:o.ms.map(m=>m.w===t.w&&m.t===t.t?{...m,...p}:m)}}));
  const upload=async e=>{const f=e.target.files[0];e.target.value='';if(!f)return;
-  await S.run(async()=>{const r=await fetch('/api/orders/'+o.id+'/files?name='+encodeURIComponent(f.name),{method:'POST',credentials:'same-origin',headers:{'x-req':'1','content-type':f.type||'application/octet-stream'},body:f});
-   if(!r.ok)throw new Error((await r.json().catch(()=>({}))).error||'Upload failed')})};
+  await S.run(async()=>{
+   // files go straight from the browser to Vercel Blob (bypasses the 4.5 MB serverless request limit)
+   const {upload:bu}=await new Function('u','return import(u)')('https://esm.sh/@vercel/blob@2.8.1/client');
+   const nm=f.name.replace(/[\\/\r\n"]/g,'_');
+   const b=await bu('orders/'+o.id+'/'+nm,f,{access:'private',handleUploadUrl:'/api/blob',headers:{'x-req':'1'},clientPayload:JSON.stringify({oid:o.id}),multipart:f.size>8e6});
+   await api('POST','/api/orders/'+o.id+'/files',{name:nm,type:f.type,pathname:b.pathname})})};
  const rem=()=>{const p=s.ms.filter(m=>m.s!=='done').map(m=>'- W'+m.w+' '+m.t+' (due '+m.due+(m.s==='late'?', OVERDUE':'')+')').join('\n');
   window.location.href='mailto:'+splitEm(o.email).join(',')+'?subject='+encodeURIComponent('Documentation status - Order '+o.orderNo)+'&body='+encodeURIComponent('Dear '+o.customer+',\n\nDocumentation status for order '+o.orderNo+':\n'+(p||'All documents submitted')+'\n\nRegards,\n'+S.cfg.mfr)};
  return<div className="modal"><div>
